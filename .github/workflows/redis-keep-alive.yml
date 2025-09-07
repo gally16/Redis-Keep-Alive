@@ -2,10 +2,8 @@ name: Redis Keep-Alive
 
 on:
   schedule:
-    # 使用 cron 语法，这里表示每4小时执行一次
-    # UTC 时间，请根据需要调整
+    # 每4小时执行一次
     - cron: '0 */4 * * *'
-  # 也可以手动触发
   workflow_dispatch:
 
 jobs:
@@ -15,36 +13,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 如果你用的是 Python
+      # 1. 固定到稳定的 Python 版本
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: pip install redis
 
+      # 2. 移除已弃用的 ssl_cert_reqs 参数
       - name: Run Python Keep-Alive Script
         env:
           REDIS_URL: ${{ secrets.REDIS_URL }}
         run: |
-          # 你可以直接在这里写一个简单的 Python 脚本，或者运行仓库里的脚本
           python -c "
           import redis, os, datetime
-          r = redis.from_url(os.getenv('REDIS_URL'), ssl_cert_reqs=None, decode_responses=True)
+          r = redis.from_url(os.getenv('REDIS_URL'), decode_responses=True)
           r.set('github_actions:keep_alive_timestamp', datetime.datetime.now().isoformat())
           print('Redis keep-alive ping sent successfully.')
           "
-      # # 如果你用的是 Node.js (二选一)
-      # - name: Set up Node.js
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: '18'
-
-      # - name: Install dependencies
-      #   run: npm install ioredis
-
-      # - name: Run Node.js Keep-Alive Script
-      #   env:
-      #     REDIS_URL: ${{ secrets.REDIS_URL }}
-      #   run: node your_keep_alive_script.js
