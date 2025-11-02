@@ -3,7 +3,7 @@ name: Redis Keep-Alive
 on:
   schedule:
     # 每4小时执行一次
-    - cron: '0 */4 * * *'
+    - cron: '0 */40 * * *'
   workflow_dispatch:
 
 jobs:
