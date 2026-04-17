@@ -14,6 +14,10 @@
 
 ### The eternal whisper
 
+REDIS_URL_1 = rediss://default:密码A@hostA:端口A  Gmail
+REDIS_URL_2 = rediss://default:密码B@hostB:端口B    
+REDIS_URL_3
+
 此项目利用 **GitHub Actions** 的力量，化作一道永恒的低语。它会按照你设定的节奏，定时向你的 Redis 数据库发送一个心跳信号，温柔地告诉云端：“我仍在此处，充满生机”。这确保了你的数据库永远不会因为闲置而沉睡。
 
 ### ✨ Features
