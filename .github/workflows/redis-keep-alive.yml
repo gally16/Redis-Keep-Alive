@@ -1,19 +1,15 @@
-name: Redis Keep-Alive
+name: Multi-Redis Keep-Alive
 
 on:
   schedule:
-    # 每4小时执行一次
-    - cron: '0 */40 * * *'
+    # 每 6 小时运行一次
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
   ping-redis:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # 1. 固定到稳定的 Python 版本
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -22,14 +18,33 @@ jobs:
       - name: Install dependencies
         run: pip install redis
 
-      # 2. 移除已弃用的 ssl_cert_reqs 参数
       - name: Run Python Keep-Alive Script
+        # 把你的多个 Secret 映射到环境变量中
         env:
-          REDIS_URL: ${{ secrets.REDIS_URL }}
+          REDIS_URL_1: ${{ secrets.REDIS_URL_1 }}
+          REDIS_URL_2: ${{ secrets.REDIS_URL_2 }}
+          REDIS_URL_3: ${{ secrets.REDIS_URL_3 }}
         run: |
           python -c "
           import redis, os, datetime
-          r = redis.from_url(os.getenv('REDIS_URL'), decode_responses=True)
-          r.set('github_actions:keep_alive_timestamp', datetime.datetime.now().isoformat())
-          print('Redis keep-alive ping sent successfully.')
+
+          # 将所有需要的环境变量名放在列表里
+          env_vars =['REDIS_URL_1', 'REDIS_URL_2', 'REDIS_URL_3']
+          
+          for var_name in env_vars:
+              url = os.getenv(var_name)
+              if not url:
+                  continue # 如果没配置这个 Secret，就跳过
+              
+              # 提取 Host 用于打印日志（隐藏密码）
+              safe_name = url.split('@')[-1] if '@' in url else var_name
+              print(f'\nConnecting to {safe_name}...')
+              
+              try:
+                  r = redis.from_url(url, decode_responses=True, socket_timeout=10)
+                  timestamp = datetime.datetime.now().isoformat()
+                  r.set('github_actions:last_seen', timestamp)
+                  print(f'✅ Success! Whisper sent at: {timestamp}.')
+              except Exception as e:
+                  print(f'❌ Failed to connect to {safe_name}. Error: {e}')
           "
