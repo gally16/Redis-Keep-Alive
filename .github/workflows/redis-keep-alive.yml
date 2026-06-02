@@ -27,7 +27,7 @@ jobs:
           REDIS_URL_4: ${{ secrets.REDIS_URL_15QQ2 }}
           REDIS_URL_5: ${{ secrets.REDIS_URL_47QQ1 }}
           REDIS_URL_6: ${{ secrets.REDIS_URL_PROTON1 }}
-          REDIS_URL_7: ${{ secrets.REDIS_URL_aivan-gmail }}
+          REDIS_URL_7: ${{ secrets.REDIS_URL_aivan_gmail }}
         run: |
           python -c "
           import redis, os, datetime
